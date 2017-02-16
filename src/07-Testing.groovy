@@ -1,3 +1,4 @@
+import groovy.json.JsonOutput
 import groovy.mock.interceptor.MockFor
 
 import static java.lang.Character.*
@@ -94,3 +95,45 @@ def text = 'Hello'
 assert text.swapCase() == 'hELLO'
 
 /----------------------------------------------------------------------------------------------------------------------/
+
+class DslExample {
+
+    static please(action) {
+        [the: { what ->
+            [of: { n -> action(what(n)) }]
+        }]
+    }
+
+    static show = {
+        println it
+    }
+
+    static square_root = {
+        Math.sqrt(it)
+    }
+
+    //static JSON = {JsonOutput.toJson(it)}
+    static JSON = {
+        def result = [value: JsonOutput.toJson(it)]
+        result.saveTo = { new File(it) << result.value }
+        return result
+    }
+
+    static convert(object) {
+        [to: { it(object) }]
+    }
+
+    static void main(String[] args) {
+
+        // equivalent to: please(show).the(square_root).of(100)
+        please show the square_root of 100
+
+        def dog = new Dog(name: 'burek')
+
+        //println( convert(dog).to(JSON))
+        convert dog to JSON saveTo "test.txt"
+    }
+}
+
+/----------------------------------------------------------------------------------------------------------------------/
+
